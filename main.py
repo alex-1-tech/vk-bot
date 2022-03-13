@@ -13,7 +13,12 @@ logging.basicConfig(
 
 
 class VkBot:
+    # create VkBot
     def __init__(self, token: str, group_id: str):
+        """
+        :param token: needed for identification
+        :param group_id: id of the bot group
+        """
         self.token = token
         self.group_id = group_id
         self.vk_session = vk_api.VkApi(
@@ -28,16 +33,21 @@ class VkBot:
         self.run(long_poll)
 
     def run(self, long_poll: VkBotLongPoll):
+        """start session bot"""
         for event in long_poll.listen():
             if event.type == VkBotEventType.MESSAGE_NEW:
                 print(event)
                 print('Новое сообщение: ')
                 print('Для меня от:', event.obj.message['from_id'])
                 print('Текст:', event.obj.message['text'])
+
                 self.vk = self.vk_session.get_api()
                 self.user = self.vk.users.get(user_id=event.obj.message['from_id'])
-                print(self.user)
+
+                """removing punctuation marks from a message"""
                 self.text_message = re.sub(r'[^\w\s]', '', event.obj.message['text'].lower())
+
+                """looking for the right answer"""
                 if self.send_salutation_message() or \
                         self.send_help_message() or \
                         self.send_time_message() or \
@@ -48,7 +58,12 @@ class VkBot:
                     continue
 
     def missed(self, name) -> bool:
+        """
+        :param name: name of the current function
+        :return: function outcome
+        """
         if self.user is None or self.vk is None:
+            """if the user is not found, log the error"""
             logging.warning(name)
             return True
         return False
